@@ -9,6 +9,9 @@ date: "2022-11-14"
 ```{r}
 library(readr)
 library(dplyr)
+library(geosphere)
+library(ggplot2)
+library(RJSONIO)
 ```
 
 
@@ -58,5 +61,178 @@ Count_Etape_2001 <- filter(stages_TDF, format(Date, format = "%Y") > 2000)  %>%
   summarize(n = n(), mean_d = mean(Distance), min_d = min(Distance), max_d = max(Distance)) %>%
   arrange(desc(n))
 ```
+
+```{r}
+# library(dismo) 
+# ggmap::register_google(key = "https://console.cloud.google.com/marketplace/product/google/geocoding-backend.googleapis.com?project=ee-gernigonleane")
+# bugarach.latlon <- geocode("Bugarach, France", oneRecord=TRUE)
+```
+
+Ajout des coordonnées GPS (longitude et latitude) pour la ville de départ
+```{r}
+nrow <- nrow(stages_TDF)
+counter <- 1
+stages_TDF$lon_Origin[counter] <- 0
+stages_TDF$lat_Origin[counter] <- 0
+while (counter <= nrow){
+  CityName <- gsub(' ','%20',stages_TDF$Origin[counter]) #remove space for URLs
+  url <- paste(
+    "http://nominatim.openstreetmap.org/search?city="
+    , CityName
+    , "&limit=9&format=json"
+    , sep="")
+  x <- fromJSON(url)
+  if(is.vector(x)){
+    stages_TDF$lon_Origin[counter] <- x[[1]]$lon
+    stages_TDF$lat_Origin[counter] <- x[[1]]$lat    
+  }
+  counter <- counter + 1
+}
+```
+
+Ajout des coordonnées GPS (longitude et latitude) pour la ville d'arrivée
+```{r}
+nrow <- nrow(stages_TDF)
+counter <- 1
+stages_TDF$lon_Destination[counter] <- 0
+stages_TDF$lat_Destination[counter] <- 0
+while (counter <= nrow){
+  CityName <- gsub(' ','%20',stages_TDF$Destination[counter]) #remove space for URLs
+  url <- paste(
+    "http://nominatim.openstreetmap.org/search?city="
+    , CityName
+    , "&limit=9&format=json"
+    , sep="")
+  x <- fromJSON(url)
+  if(is.vector(x)){
+    stages_TDF$lon_Destination[counter] <- x[[1]]$lon
+    stages_TDF$lat_Destination[counter] <- x[[1]]$lat    
+  }
+  counter <- counter + 1
+}
+```
+
+
+Enregistrement du nouveau fichier csv
+
+```{r}
+write.csv(x = stages_TDF, file = "stages_TDFcoord.csv")
+```
+
+Réimportation des données si pas en mémoire
+
+```{r}
+stages_TDF <- read.csv("D:/AGROCAMPUS M2/Visualisation de données hétérogènes/Projet/visualisation-tdf/TDF/stages_TDFcoord.csv", sep = ",")
+stages_TDF <- stages_TDF[-1]
+```
+
+
+Pour les coordonées GPS qui manque (lieu touristique, col...), on va chercher les coordonnées spécifiquement
+
+```{r}
+nrow <- nrow(stages_TDF)
+counter <- 1
+
+while (counter <= nrow){
+  if (stages_TDF$lon_Destination[counter] == 0){
+    PlaceName <- gsub(' ','%20',stages_TDF$Destination[counter]) #remove space for URLs
+    url <- paste(
+      "http://nominatim.openstreetmap.org/search?q="
+      , PlaceName
+      , "&limit=9&format=json"
+      , sep="")
+    x <- fromJSON(url)
+    if(is.vector(x)){
+      stages_TDF$lon_Destination[counter] <- x[[1]]$lon
+      stages_TDF$lat_Destination[counter] <- x[[1]]$lat    
+    }
+  }
+  counter <- counter + 1
+}
+```
+
+```{r}
+nrow <- nrow(stages_TDF)
+counter <- 1
+while (counter <= nrow){
+  if (stages_TDF$lon_Origin[counter] == 0){
+    PlaceName <- gsub(' ','%20',stages_TDF$Origin[counter]) #remove space for URLs
+    url <- paste(
+      "http://nominatim.openstreetmap.org/search?q="
+      , PlaceName
+      , "&limit=9&format=json"
+      , sep="")
+    x <- fromJSON(url)
+    if(is.vector(x)){
+      stages_TDF$lon_Origin[counter] <- x[[1]]$lon
+      stages_TDF$lat_Origin[counter] <- x[[1]]$lat    
+    }
+  }
+  counter <- counter + 1
+}
+```
+
+Il reste encore quelque données manquantes. On les modifie à la main
+
+```{r}
+stages_TDF[which(stages_TDF$lat_Destination == 0),]$Destination
+stages_TDF[which(stages_TDF$lat_Origin == 0),]$Origin
+
+# Modification de l'épreuve mal labellisée
+stages_TDF[which(stages_TDF$lat_Destination == 0),]$Destination[2] <- "Compiègne"
+stages_TDF[which(stages_TDF$lat_Origin == 0),]$Origin[2] <- "Waregem"
+
+# Ajout des coordonnées GPS pour les destinations manquantes
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- 6.407828
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- 45.064036
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- 2.850973
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- 49.400124
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- -0.339642
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- 42.976500
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- NA
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- NA
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- -0.359541
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- 49.186541
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- NA
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- NA
+
+# Ajout des coordonnées GPS pour les origines manquantes
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- 0.034553
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- 43.469529
+
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- 3.415826
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- 50.877957
+
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- NA
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- NA
+
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- NA
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- NA
+
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- -0.359541
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- 49.186541
+
+```
+
+
+Enregistrement du nouveau fichier csv
+
+```{r}
+write.csv(x = stages_TDF, file = "stages_TDFcoord2.csv")
+```
+
+Réimportation des données si pas en mémoire
+
+```{r}
+stages_TDF <- read.csv("D:/AGROCAMPUS M2/Visualisation de données hétérogènes/Projet/visualisation-tdf/TDF/stages_TDFcoord2.csv", sep = ",")
+stages_TDF <- stages_TDF[-1]
+```
+
+# Cartographie
 
 

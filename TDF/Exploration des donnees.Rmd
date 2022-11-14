@@ -15,6 +15,7 @@ date: "2022-11-14"
 ```{r}
 library(readr) 
 library(dplyr)
+library(plotly)
 ```
 
 
@@ -45,24 +46,7 @@ Count_Ville <- Ville_Type %>% group_by(Ville) %>%
 Count_Ville[which(Count_Ville$n >=10),]
 ```
 
-# Grouper par étape
-
 ```{r}
-stages_TDF$Date <- as.Date(stages_TDF$Date, format = "%Y-%m-%d")
-
-Count_Etape <- stages_TDF %>% group_by(Origin, Destination) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n))
-
-Count_Etape_2000 <- filter(stages_TDF, format(Date, format = "%Y") <= 2000)  %>% 
-  group_by(Origin, Destination) %>%
-  summarize(n = n(), mean_d = mean(Distance), min_d = min(Distance), max_d = max(Distance)) %>%
-  arrange(desc(n))
-
-Count_Etape_2001 <- filter(stages_TDF, format(Date, format = "%Y") > 2000)  %>% 
-  group_by(Origin, Destination) %>%
-  summarize(n = n(), mean_d = mean(Distance), min_d = min(Distance), max_d = max(Distance)) %>%
-  arrange(desc(n))
+fig <- plot_geo(Ville_Type, locationmode = 'France', sizes = c(1, 250))
 ```
-
 
