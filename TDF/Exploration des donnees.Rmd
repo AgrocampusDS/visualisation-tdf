@@ -13,7 +13,7 @@ date: "2022-11-14"
 # Importation des packages
 
 ```{r}
-library(readr)
+library(readr) 
 library(dplyr)
 ```
 
