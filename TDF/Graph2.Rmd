@@ -4,34 +4,58 @@ output: html_document
 date: "2022-11-14"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+
+```{r}
+tdf=read.csv('C:/Users/BOUADDOUCH Najia/Documents/Projet visu/stages_TDF.csv',sep=';')
+tdf$Date <- as.Date(tdf$Date, format = "%Y-%m-%d")
+#plot(tdf$Distance~tdf$Date)
+
+```
+petit problème sur les types :
+
+```{r}
+library(dplyr)
+types= tdf$Type %>%
+  unique()
 ```
 
-## R Markdown
+```{r}
+flat=c('Flat','Flat stage','Flat Stage','Half Stage','Plain stage','Plain stage with cobblestones',"Flat cobblestone stage" )
+hilly=c('Hilly','Hilly stage','Transition stage','Half Stage','Intermediate stage')
+mountain=c('Mountain',"High mountain stage","Medium mountain stage","Mountain Stage" ,"Stage with mountain(s)" ,"Mountain stage" ,"Stage with mountain")
+ind_timetrial=c('ind_timetrial',"Mountain time trial","Individual time trial")
+team_timetrial=c('team_timetrial',"Team time trial")
+type=list(flat,hilly,mountain,ind_timetrial,team_timetrial)
+for (i in 1:length(tdf$Type)) {
+  
+  for (k in type) {
+    if (tdf$Type[i]%in% k) {
+      tdf$Type[i]=k[1]
+      
+    }
+  }
+  
+  
+  
+}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+unique(tdf$Type)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+library(ggplot2)
+ggplot(tdf, aes(x = Date, y = Distance)) + 
+  geom_line(aes(color = Type, linetype = Type))  
+  #scale_color_manual(values = c("darkred", "steelblue"))
+```
+```{r}
+qplot(tdf$Date,tdf$Distance, geom='smooth', span =0.5, color=tdf$Type)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-git add
-git -m commit ""
-git pull/push
 
 
 
