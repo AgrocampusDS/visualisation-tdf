@@ -371,7 +371,7 @@ for (k in 1:nrow(pt)){
 }
 
 p + labs(title= "Carte de l'évolution des étapes")
-
+ 
 ```
 
 
