@@ -4,7 +4,7 @@ output: html_document
 date: "2022-11-14"
 ---
 
-
+#importation + gestion dates
 
 ```{r}
 tdf=read.csv('C:/Users/BOUADDOUCH Najia/Documents/Projet visu/stages_TDF.csv',sep=';')
@@ -19,6 +19,8 @@ library(dplyr)
 types= tdf$Type %>%
   unique()
 ```
+
+On se limite à 5 types : boucle pour remplacer un par un les types 
 
 ```{r}
 flat=c('Flat','Flat stage','Flat Stage','Half Stage','Plain stage','Plain stage with cobblestones',"Flat cobblestone stage" )
@@ -44,14 +46,17 @@ for (i in 1:length(tdf$Type)) {
 unique(tdf$Type)
 ```
 
-
+Courbes :
 
 ```{r}
 library(ggplot2)
 ggplot(tdf, aes(x = Date, y = Distance)) + 
   geom_line(aes(color = Type, linetype = Type))  
-  #scale_color_manual(values = c("darkred", "steelblue"))
+
 ```
+
+Courbes lissées : 
+
 ```{r}
 qplot(tdf$Date,tdf$Distance, geom='smooth', span =0.5, color=tdf$Type)
 ```
