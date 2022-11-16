@@ -3,3 +3,427 @@ title: "Graph"
 output: html_document
 date: "2022-11-14"
 ---
+<<<<<<< HEAD
+=======
+
+# Importation des packages
+
+```{r}
+library(readr)
+library(dplyr)
+library(geosphere)
+library(ggplot2)
+library(RJSONIO)
+library(plotly)
+library(maps)
+library(mapdata)
+library(ggmap)
+library(rgdal)
+library(raster)
+
+```
+
+
+# Importation des données 
+
+```{r}
+stages_TDF <- read.csv("D:/AGROCAMPUS M2/Visualisation de données hétérogènes/Projet/visualisation-tdf/stages_TDF.csv", sep = ";")
+```
+
+# Construction dataframe association ville - type d'étape
+
+```{r}
+Origin_Type = stages_TDF[c("Origin", "Type")]
+colnames(Origin_Type) = c("Ville", "Type")
+Destination_Type = stages_TDF[c("Destination", "Type")]
+colnames(Destination_Type) = c("Ville", "Type")
+
+Ville_Type = rbind(Origin_Type, Destination_Type)
+```
+
+```{r}
+Ville_Type$Ville <- as.factor(Ville_Type$Ville)
+
+Count_Ville <- Ville_Type %>% group_by(Ville) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+
+Count_Ville[which(Count_Ville$n >=10),]
+```
+
+# Grouper par étape
+
+```{r}
+stages_TDF$Date <- as.Date(stages_TDF$Date, format = "%Y-%m-%d")
+
+Count_Etape <- stages_TDF %>% group_by(Origin, Destination) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+
+Count_Etape_2000 <- filter(stages_TDF, format(Date, format = "%Y") <= 2000)  %>% 
+  group_by(Origin, Destination) %>%
+  summarize(n = n(), mean_d = mean(Distance), min_d = min(Distance), max_d = max(Distance)) %>%
+  arrange(desc(n))
+
+Count_Etape_2001 <- filter(stages_TDF, format(Date, format = "%Y") > 2000)  %>% 
+  group_by(Origin, Destination) %>%
+  summarize(n = n(), mean_d = mean(Distance), min_d = min(Distance), max_d = max(Distance)) %>%
+  arrange(desc(n))
+```
+
+```{r}
+# library(dismo) 
+# ggmap::register_google(key = "https://console.cloud.google.com/marketplace/product/google/geocoding-backend.googleapis.com?project=ee-gernigonleane")
+# bugarach.latlon <- geocode("Bugarach, France", oneRecord=TRUE)
+```
+
+Ajout des coordonnées GPS (longitude et latitude) pour la ville de départ
+```{r}
+nrow <- nrow(stages_TDF)
+counter <- 1
+stages_TDF$lon_Origin[counter] <- 0
+stages_TDF$lat_Origin[counter] <- 0
+while (counter <= nrow){
+  CityName <- gsub(' ','%20',stages_TDF$Origin[counter]) #remove space for URLs
+  url <- paste(
+    "http://nominatim.openstreetmap.org/search?city="
+    , CityName
+    , "&limit=9&format=json"
+    , sep="")
+  x <- fromJSON(url)
+  if(is.vector(x)){
+    stages_TDF$lon_Origin[counter] <- x[[1]]$lon
+    stages_TDF$lat_Origin[counter] <- x[[1]]$lat    
+  }
+  counter <- counter + 1
+}
+```
+
+Ajout des coordonnées GPS (longitude et latitude) pour la ville d'arrivée
+```{r}
+nrow <- nrow(stages_TDF)
+counter <- 1
+stages_TDF$lon_Destination[counter] <- 0
+stages_TDF$lat_Destination[counter] <- 0
+while (counter <= nrow){
+  CityName <- gsub(' ','%20',stages_TDF$Destination[counter]) #remove space for URLs
+  url <- paste(
+    "http://nominatim.openstreetmap.org/search?city="
+    , CityName
+    , "&limit=9&format=json"
+    , sep="")
+  x <- fromJSON(url)
+  if(is.vector(x)){
+    stages_TDF$lon_Destination[counter] <- x[[1]]$lon
+    stages_TDF$lat_Destination[counter] <- x[[1]]$lat    
+  }
+  counter <- counter + 1
+}
+```
+
+
+Enregistrement du nouveau fichier csv
+
+```{r}
+write.csv(x = stages_TDF, file = "stages_TDFcoord.csv")
+```
+
+Réimportation des données si pas en mémoire
+
+```{r}
+stages_TDF <- read.csv("D:/AGROCAMPUS M2/Visualisation de données hétérogènes/Projet/visualisation-tdf/TDF/stages_TDFcoord.csv", sep = ",")
+stages_TDF <- stages_TDF[-1]
+```
+
+
+Pour les coordonées GPS qui manque (lieu touristique, col...), on va chercher les coordonnées spécifiquement
+
+```{r}
+nrow <- nrow(stages_TDF)
+counter <- 1
+
+while (counter <= nrow){
+  if (stages_TDF$lon_Destination[counter] == 0){
+    PlaceName <- gsub(' ','%20',stages_TDF$Destination[counter]) #remove space for URLs
+    url <- paste(
+      "http://nominatim.openstreetmap.org/search?q="
+      , PlaceName
+      , "&limit=9&format=json"
+      , sep="")
+    x <- fromJSON(url)
+    if(is.vector(x)){
+      stages_TDF$lon_Destination[counter] <- x[[1]]$lon
+      stages_TDF$lat_Destination[counter] <- x[[1]]$lat    
+    }
+  }
+  counter <- counter + 1
+}
+```
+
+```{r}
+nrow <- nrow(stages_TDF)
+counter <- 1
+while (counter <= nrow){
+  if (stages_TDF$lon_Origin[counter] == 0){
+    PlaceName <- gsub(' ','%20',stages_TDF$Origin[counter]) #remove space for URLs
+    url <- paste(
+      "http://nominatim.openstreetmap.org/search?q="
+      , PlaceName
+      , "&limit=9&format=json"
+      , sep="")
+    x <- fromJSON(url)
+    if(is.vector(x)){
+      stages_TDF$lon_Origin[counter] <- x[[1]]$lon
+      stages_TDF$lat_Origin[counter] <- x[[1]]$lat    
+    }
+  }
+  counter <- counter + 1
+}
+```
+
+Il reste encore quelque données manquantes. On les modifie à la main
+
+```{r}
+stages_TDF[which(stages_TDF$lat_Destination == 0),]$Destination
+stages_TDF[which(stages_TDF$lat_Origin == 0),]$Origin
+
+# Modification de l'épreuve mal labellisée
+stages_TDF[which(stages_TDF$lat_Destination == 0),]$Destination[2] <- "Compiègne"
+stages_TDF[which(stages_TDF$lat_Origin == 0),]$Origin[2] <- "Waregem"
+
+# Ajout des coordonnées GPS pour les destinations manquantes
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- 6.407828
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- 45.064036
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- 2.850973
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- 49.400124
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- -0.339642
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- 42.976500
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- NA
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- NA
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- -0.359541
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- 49.186541
+
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lon_Destination <- NA
+stages_TDF[which(stages_TDF$lat_Destination == 0),][1,]$lat_Destination <- NA
+
+# Ajout des coordonnées GPS pour les origines manquantes
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- 0.034553
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- 43.469529
+
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- 3.415826
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- 50.877957
+
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- NA
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- NA
+
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- NA
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- NA
+
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lon_Origin <- -0.359541
+stages_TDF[which(stages_TDF$lat_Origin == 0),][1,]$lat_Origin <- 49.186541
+
+```
+
+
+Enregistrement du nouveau fichier csv
+
+```{r}
+write.csv(x = stages_TDF, file = "stages_TDFcoord2.csv")
+```
+
+Réimportation des données si pas en mémoire
+
+```{r}
+stages_TDF <- read.csv("D:/AGROCAMPUS M2/Visualisation de données hétérogènes/Projet/visualisation-tdf/TDF/stages_TDFcoord2.csv", sep = ",")
+stages_TDF <- stages_TDF[-1]
+```
+
+# Cartographie
+
+## Visualisation des villes d'accueil (départ + arrivée)
+
+Construction d'un nouveau dataframe
+
+```{r}
+Origin_Type = stages_TDF[c("Origin", "Type", "lat_Origin", "lon_Origin", "Date")]
+colnames(Origin_Type) = c("Ville", "Type", "lat", "lon", "Date")
+Destination_Type = stages_TDF[c("Destination", "Type", "lat_Destination", "lon_Destination", "Date")]
+colnames(Destination_Type) = c("Ville", "Type", "lat", "lon", "Date")
+
+Ville_Type = rbind(Origin_Type, Destination_Type)
+```
+
+```{r}
+Ville_Type$Ville <- as.factor(Ville_Type$Ville)
+Ville_Type$lat <- as.numeric(Ville_Type$lat)
+Ville_Type$lon <- as.numeric(Ville_Type$lon)
+
+Count_Ville <- Ville_Type %>% group_by(Ville, lon, lat) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+
+Count_Ville[which(Count_Ville$n >=10),]
+
+Count_Ville$lat <- as.numeric(Count_Ville$lat)
+Count_Ville$lon <- as.numeric(Count_Ville$lon)
+Count_Ville <- Count_Ville[-which(abs(Count_Ville$lon)>60),]
+data = Count_Ville[which(Count_Ville$n > 3),]
+```
+
+
+# Connexion map
+
+```{r}
+# A function that keeps the good part of the great circle, by Jeff Leek:
+getGreatCircle <- function(userLL,relationLL){
+  tmpCircle = greatCircle(userLL,relationLL, n=200)
+  start = which.min(abs(tmpCircle[,1] - data.frame(userLL)[1,1]))
+  end = which.min(abs(tmpCircle[,1] - relationLL[1]))
+  greatC = tmpCircle[start:end,]
+  return(greatC)
+}
+
+Paris=c(2,49)
+Melbourne = c(0, 46)
+map("worldHires", "france", xlim=c(-5,10), ylim=c(35,55))
+points(x=data$lon, y=data$lat, col="slateblue", cex=1, pch=20)
+great <- getGreatCircle(Paris, Melbourne)
+lines(great, col="skyblue", lwd=2)
+```
+
+Création dataframe des étapes (on enlève les doublons depart-arrivé / arrive-depart)
+
+```{r}
+stages_TDF$Date <- as.Date(stages_TDF$Date, format = "%Y-%m-%d")
+
+Count_Etape <- stages_TDF %>% group_by(Origin, Destination, lon_Origin, lat_Origin, lon_Destination, lat_Destination, Inf_1945 = format(Date, format = "%Y") <= 1945) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+
+Count_Etape$lat_Destination <- as.numeric(Count_Etape$lat_Destination)
+Count_Etape$lon_Destination <- as.numeric(Count_Etape$lon_Destination)
+Count_Etape$lat_Origin <- as.numeric(Count_Etape$lat_Origin)
+Count_Etape$lon_Origin <- as.numeric(Count_Etape$lon_Origin)
+
+```
+
+On ajoute la taille des points pour années avant 1945 et la couleur pour après 1945
+```{r}
+Ville_Type$Ville <- as.factor(Ville_Type$Ville)
+Ville_Type$lat <- as.numeric(Ville_Type$lat)
+Ville_Type$lon <- as.numeric(Ville_Type$lon)
+
+Count_Ville2a <- filter(Ville_Type, format(Date, format = "%Y")<= 1945) %>% group_by(Ville, lon, lat) %>%
+  summarize(n_Inf1945 = n()) %>%
+  arrange(desc(n_Inf1945))
+  
+Count_Ville2b <- filter(Ville_Type, format(Date, format = "%Y")> 1945) %>% group_by(Ville, lon, lat) %>%
+  summarize(n_Sup1945 = n()) %>%
+  arrange(desc(n_Sup1945))
+
+Count_Ville2 <- merge(Count_Ville2a, Count_Ville2b[c(1,4)], by=c("Ville"))
+#innerjoin
+Count_Ville2 <- full_join(Count_Ville2a, Count_Ville2b, by=c("Ville", "lon", "lat"))
+# On remplace les NA par 1 pour ne pas perdre de l'information sur la carte
+Count_Ville2$n_Sup1945[which(is.na(Count_Ville2$n_Sup1945))] <- 0
+Count_Ville2$n_Inf1945[which(is.na(Count_Ville2$n_Inf1945))] <- 0
+
+#Count_Ville2[which(Count_Ville$n >=10),]
+
+Count_Ville2$lat <- as.numeric(Count_Ville2$lat)
+Count_Ville2$lon <- as.numeric(Count_Ville2$lon)
+data2 = Count_Ville2[which(Count_Ville2$n_Inf1945 > 2 | Count_Ville2$n_Sup1945 > 2),]
+data2 = Count_Ville2
+```
+
+
+
+Essai d'ajout de tous les éléments de la légende
+
+
+```{r}
+france <- c(left = -5, bottom = 41, right = 10, top = 51.5)
+map <- get_stamenmap(france, zoom = 5, maptype = "terrain-background")
+mid <- 30
+p <- ggmap(map)+
+  geom_point( data=data2, aes(x=lon, y=lat, size=n_Inf1945, color=n_Sup1945)) + 
+  scale_color_gradient2(midpoint = mid, low = "gold", mid = "red", high = "blue", space = "Lab") +
+  theme_void() + ylim(41, 51.5) + coord_map()+ labs(color = "Nb fois ville d'accueil après 1945", size = "Nb fois ville d'accueil avant 1945")
+
+
+Count_Etape_lim <- Count_Etape[which(Count_Etape$n >2),]
+
+
+for (k in 1:nrow(Count_Etape_lim)){
+    inter <- as.data.frame(gcIntermediate(c(Count_Etape_lim$lon_Origin[k], Count_Etape_lim$lat_Origin[k]), c(Count_Etape_lim$lon_Destination[k], Count_Etape_lim$lat_Destination[k]), n=50, addStartEnd=TRUE, breakAtDateLine=T))
+    names(inter) <- c("long", "lati")
+    if (Count_Etape_lim$Inf_1945[k] == TRUE){
+      p <- p + geom_line(data=inter, aes(x=long, y=lati), size = 3*Count_Etape_lim$n[k]/max(Count_Etape_lim$n), color='turquoise1', alpha = 0.75)
+    } else {
+      p <- p + geom_line(data=inter, aes(x=long, y=lati), size = 3*Count_Etape_lim$n[k]/max(Count_Etape_lim$n), color='yellow1', alpha = 0.75)
+    }
+}
+#p <- p + geom_line(data=df, aes(x=as.data.frame(lon), y=as.data.frame(lat), size = 3*size, color=color))
+
+
+pt <- data2[which(data2$n_Inf1945 >30 | data2$n_Sup1945 >30),]
+for (k in 1:nrow(pt)){
+  p <- p +
+    geom_text(data = pt[k,], aes(x = lon, y = lat, label = Ville), 
+          size = 3, vjust = 0, hjust = -0.25)
+}
+
+p + labs(title= "Carte de l'évolution des étapes")
+ 
+```
+
+
+
+
+```{r}
+france <- c(left = -5, bottom = 41, right = 10, top = 51.5)
+map <- get_stamenmap(france, zoom = 5, maptype = "terrain-background")
+mid <- 30
+p <- ggmap(map)+
+  geom_point( data=data, aes(x=lon, y=lat, size=n, color=n)) + 
+  scale_color_continuous(limits=c(0, max(data$n)), breaks=seq(0, max(data$n), by=20), type = "gradient") + 
+  guides(color= guide_legend(), size=guide_legend()) + scale_size_continuous(limits=c(0, max(data$n)), breaks=seq(0, max(data$n), by=20)) +
+  #scale_color_gradient2(midpoint = mid, low = "gold", mid = "red", high = "blue", space = "Lab") +
+  theme_void() + ylim(41, 51.5) + coord_map()+ labs("Nb fois ville d'accueil")
+
+
+Count_Etape_lim <- Count_Etape[which(Count_Etape$n >2),]
+
+
+for (k in 1:nrow(Count_Etape_lim)){
+    inter <- as.data.frame(gcIntermediate(c(Count_Etape_lim$lon_Origin[k], Count_Etape_lim$lat_Origin[k]), c(Count_Etape_lim$lon_Destination[k], Count_Etape_lim$lat_Destination[k]), n=50, addStartEnd=TRUE, breakAtDateLine=T))
+    names(inter) <- c("long", "lati")
+    if (Count_Etape_lim$Inf_1945[k] == TRUE){
+      p <- p + geom_line(data=inter, aes(x=long, y=lati), size = 3*Count_Etape_lim$n[k]/max(Count_Etape_lim$n), color='orange', alpha = 0.75)
+    } else {
+      p <- p + geom_line(data=inter, aes(x=long, y=lati), size = 3*Count_Etape_lim$n[k]/max(Count_Etape_lim$n), color='yellow1', alpha = 0.75)
+    }
+}
+#p <- p + geom_line(data=df, aes(x=as.data.frame(lon), y=as.data.frame(lat), size = 3*size, color=color))
+
+
+pt <- data[which(data$n >30),]
+for (k in 1:nrow(pt)){
+  p <- p +
+    geom_text(data = pt[k,], aes(x = lon, y = lat, label = Ville), 
+          size = 3, vjust = 0, hjust = -0.25)
+}
+
+p + labs(title= "Carte de l'évolution des étapes")
+ 
+```
+
+
+
+
+
+>>>>>>> d624a691fab4198305b129f27db501f788fd9207
