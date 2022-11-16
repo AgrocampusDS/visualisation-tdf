@@ -4,6 +4,12 @@ output: html_document
 date: "2022-11-14"
 ---
 
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+
 #importation + gestion dates
 
 ```{r}
@@ -12,10 +18,10 @@ tdf$Date <- as.Date(tdf$Date, format = "%Y-%m-%d")
 #plot(tdf$Distance~tdf$Date)
 
 ```
+
 petit problème sur les types :
 
 ```{r}
-library(dplyr)
 types= tdf$Type %>%
   unique()
 ```
@@ -44,10 +50,9 @@ for (i in 1:length(tdf$Type)) {
 unique(tdf$Type) #double check
 ```
 
-Courbes :
+Courbes  :
 
 ```{r}
-library(ggplot2)
 ggplot(tdf, aes(x = Date, y = Distance)) + 
   geom_line(aes(color = Type, linetype = Type))  
 
@@ -55,7 +60,7 @@ ggplot(tdf, aes(x = Date, y = Distance)) +
 
 ----- Courbes lissées : 
 
-somme de distance par an :
+somme des distances par an :
 
 ```{r}
 tdf$Year= as.numeric(format(tdf$Date, format="%Y"))
@@ -64,7 +69,6 @@ tdf %>%
   group_by(Year) %>%
   summarise(dist_totale = sum(Distance))%>%
   as.data.frame()-> dist_totale
-
 
 ```
 
@@ -77,18 +81,24 @@ mean=aggregate(tdf$Distance, list(tdf$Type), FUN=mean)
 
 ```
 
+merge (pour ajouter la distance totale)
 
 ```{r}
 tdf_bis=merge(tdf,dist_totale,by='Year')
+
+```
+
+
+```{r}
 ggplot(data=tdf_bis,aes(x=Year)) +
   geom_smooth(aes(y=Distance,color=Type),se=F)+
-  #scale_colour_hue(c=45, l=80)+
+  scale_colour_hue(c=45, l=80)+
   #scale_colour_brewer()+
   #scale_color_manual(values=c('#37305f', '#453d77', '#8979ed','#dcd7fa','#f3f2fd'))+
   #geom_smooth()+
  
 
-  geom_smooth(aes(x=Year,y=dist_totale/10,color='total'),color='black',linetype = "dashed",se=F,size=1.5)+
+  geom_smooth(aes(x=Year,y=dist_totale/10,color='total'),color='#fd3f92',linetype = "dashed",se=F,size=1)+
   #scale_linetype_manual(NULL, values = 1) +
   #scale_color_manual(values = '#F21A00') +
   scale_y_continuous(name = "Distance per stage",
@@ -96,14 +106,16 @@ ggplot(data=tdf_bis,aes(x=Year)) +
   )+
   #geom_hline(yintercept=mean(tdf$Distance), linetype='dashed') +
   #geom_hline(data= mean, aes(yintercept = x,col=Group.1),linetype='dashed',size=0.0001) +
-  labs(colour = 'Types') + 
+  labs(colour = 'Stage type',face='bold') + 
   labs(y='Distance in km',x='Years' )+ 
   
   theme_grey() +
 
   theme(
-    #axis.title.y = element_text(color = temperatureColor, size=13),
-    axis.title.y.right = element_text(face='bold',color = 'black', size=13))+
+    axis.title.y.right = element_text(color = '#fd3f92',size=12))+
+  
+  theme(axis.title = element_text(size=12))+
+
   theme(axis.text.y.right = element_text(face="bold"))+
   theme(legend.position="left")
 
