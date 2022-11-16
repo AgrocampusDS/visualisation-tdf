@@ -134,3 +134,22 @@ ggplot(data=tdf_bis,aes(x=Year)) +
 
 
 
+----------------------------------------- GRAPHE 3  : 
+
+(pas encore fini)
+
+```{r}
+
+tdf_bis %>%
+  group_by(Type)%>%
+  
+  ggplot(aes(as.numeric(Year),fill = Type)) +
+  geom_bar(position = "fill",width = 1,alpha =0.7)+
+  scale_fill_hue(c=35, l=70)+
+  labs(title = "Stages types", y = "Proportion", x="Years")+
+  theme(legend.position="left")
+
+```
+```
+
+
