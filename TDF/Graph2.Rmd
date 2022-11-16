@@ -26,8 +26,8 @@ On se limite à 5 types : boucle pour remplacer un par un les types
 flat=c('Flat','Flat stage','Flat Stage','Half Stage','Plain stage','Plain stage with cobblestones',"Flat cobblestone stage" )
 hilly=c('Hilly','Hilly stage','Transition stage','Half Stage','Intermediate stage')
 mountain=c('Mountain',"High mountain stage","Medium mountain stage","Mountain Stage" ,"Stage with mountain(s)" ,"Mountain stage" ,"Stage with mountain")
-ind_timetrial=c('ind_timetrial',"Mountain time trial","Individual time trial")
-team_timetrial=c('team_timetrial',"Team time trial")
+ind_timetrial=c('individual time trial',"Mountain time trial","Individual time trial")
+team_timetrial=c('team time trial',"Team time trial")
 
 type=list(flat,hilly,mountain,ind_timetrial,team_timetrial)  #liste de vecteurs
 
@@ -55,6 +55,21 @@ ggplot(tdf, aes(x = Date, y = Distance)) +
 
 ----- Courbes lissées : 
 
+somme de distance par an :
+
+```{r}
+tdf$Year= as.numeric(format(tdf$Date, format="%Y"))
+
+tdf %>%
+  group_by(Year) %>%
+  summarise(dist_totale = sum(Distance))%>%
+  as.data.frame()-> dist_totale
+
+
+```
+
+
+
 calcul de la moyenne par type :
 ```{r}
 
@@ -64,12 +79,36 @@ mean=aggregate(tdf$Distance, list(tdf$Type), FUN=mean)
 
 
 ```{r}
+tdf_bis=merge(tdf,dist_totale,by='Year')
+ggplot(data=tdf_bis,aes(x=Year)) +
+  geom_smooth(aes(y=Distance,color=Type),se=F)+
+  #scale_colour_hue(c=45, l=80)+
+  #scale_colour_brewer()+
+  #scale_color_manual(values=c('#37305f', '#453d77', '#8979ed','#dcd7fa','#f3f2fd'))+
+  #geom_smooth()+
+ 
 
-qplot(tdf$Date,tdf$Distance, geom='smooth', span =0.5, color=tdf$Type) +
+  geom_smooth(aes(x=Year,y=dist_totale/10,color='total'),color='black',linetype = "dashed",se=F,size=1.5)+
+  #scale_linetype_manual(NULL, values = 1) +
+  #scale_color_manual(values = '#F21A00') +
+  scale_y_continuous(name = "Distance per stage",
+    sec.axis = sec_axis( trans=~.*10, name="Total distance")
+  )+
   #geom_hline(yintercept=mean(tdf$Distance), linetype='dashed') +
-  geom_hline(data= mean, aes(yintercept = x,col=Group.1),linetype='dashed') +
-  labs(colour = "Type") + 
-  labs(y='Distance in km',x='Years' )
+  #geom_hline(data= mean, aes(yintercept = x,col=Group.1),linetype='dashed',size=0.0001) +
+  labs(colour = 'Types') + 
+  labs(y='Distance in km',x='Years' )+ 
+  
+  theme_grey() +
+
+  theme(
+    #axis.title.y = element_text(color = temperatureColor, size=13),
+    axis.title.y.right = element_text(face='bold',color = 'black', size=13))+
+  theme(axis.text.y.right = element_text(face="bold"))+
+  theme(legend.position="left")
+
+      
+  
 
 
 
