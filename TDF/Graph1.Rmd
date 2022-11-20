@@ -3,8 +3,7 @@ title: "Graph"
 output: html_document
 date: "2022-11-14"
 ---
-<<<<<<< HEAD
-=======
+
 
 # Importation des packages
 
@@ -513,5 +512,3 @@ p + labs(title= "Carte de l'évolution des étapes")
 
 
 
-
->>>>>>> d624a691fab4198305b129f27db501f788fd9207
