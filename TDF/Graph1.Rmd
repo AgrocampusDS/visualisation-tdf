@@ -458,7 +458,9 @@ for (k in 1:nrow(pt)){
           size = 3, vjust = 0, hjust = -0.25, col="black")
 }
 
-p + scale_size_continuous(limits=c(1, max(Count_Etape_lim$n)), breaks=seq(1, max(Count_Etape_lim$n), by=3), range = c(0,2)) + guides(size=guide_legend(ncol=2)) + labs(title= "Carte de l'évolution des étapes") + labs(colour="Période") + labs(size = "Nb de fois villes connectées")
+p <- p + scale_size_continuous(limits=c(1, max(Count_Etape_lim$n)), breaks=seq(1, max(Count_Etape_lim$n), by=3), range = c(0,2)) + guides(size=guide_legend(ncol=2)) + labs(title= "Carte de l'évolution des étapes") + labs(colour="Période") + labs(size = "Nb de fois villes connectées") 
+
+p <- p + new_scale("size") + new_scale_color()
  
 ```
 
@@ -504,7 +506,6 @@ for (k in 1:nrow(pt)){
           size = 3, vjust = 0, hjust = -0.25, col="black")
 }
 
-p + labs(title= "Carte de l'évolution des étapes") 
  
 ```
 
