@@ -81,8 +81,7 @@ Column
 ```{r data2, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 # Importation des données
 
-#stages_TDF <- read.csv("D:/AGROCAMPUS M2/Visualisation de données hétérogènes/Projet/visualisation-tdf/TDF/stages_TDFcoord2.csv", sep = ",")
-stages_TDF <- read.csv("../TDF/stages_TDFcoord2.csv", sep = ",")
+stages_TDF <- read.csv("./TDF/stages_TDFcoord2.csv", sep = ",")
 stages_TDF <- stages_TDF[-1]
 
 # Construction d'un nouveau dataframe avec les informations par ville
