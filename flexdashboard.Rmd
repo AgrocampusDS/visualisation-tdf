@@ -29,18 +29,18 @@ library(flexdashboard)
 library(tidyverse)
 library(ggplot2)
 library(plotly)
-library(readr)
-library(dplyr)
-library(geosphere)
-library(ggplot2)
-library(RJSONIO)
-library(plotly)
-library(maps)
-library(mapdata)
-library(ggmap)
-library(rgdal)
-library(raster)
-library(ggnewscale)
+# library(readr)
+# library(dplyr)
+# library(geosphere)
+# library(ggplot2)
+# library(RJSONIO)
+# library(plotly)
+# library(maps)
+# library(mapdata)
+# library(ggmap)
+# library(rgdal)
+# library(raster)
+# library(ggnewscale)
 ```
 
 Column {data-width=650}
@@ -79,101 +79,95 @@ Column
 ### Cartographie des lieux du tour de France
 
 ```{r data2, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-# Importation des données
-
-stages_TDF <- read.csv("./TDF/stages_TDFcoord2.csv", sep = ",")
-stages_TDF <- stages_TDF[-1]
-
-# Construction d'un nouveau dataframe avec les informations par ville
-
-Origin_Type = stages_TDF[c("Origin", "Type", "lat_Origin", "lon_Origin", "Date")]
-colnames(Origin_Type) = c("Ville", "Type", "lat", "lon", "Date")
-Destination_Type = stages_TDF[c("Destination", "Type", "lat_Destination", "lon_Destination", "Date")]
-colnames(Destination_Type) = c("Ville", "Type", "lat", "lon", "Date")
-
-Ville_Type = rbind(Origin_Type, Destination_Type)
-
-Ville_Type$Ville <- as.factor(Ville_Type$Ville)
-Ville_Type$lat <- as.numeric(Ville_Type$lat)
-Ville_Type$lon <- as.numeric(Ville_Type$lon)
-
-# Construction d'un nouveau dataframe avec les infos des villes + le nb de fois où la ville a été visitée
-# Séparation temporelle avant ou après 1945
-
-Count_Ville <- Ville_Type %>% group_by(Ville, lon, lat) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n))
-
-Count_Ville[which(Count_Ville$n >=10),]
-
-Count_Ville$lat <- as.numeric(Count_Ville$lat)
-Count_Ville$lon <- as.numeric(Count_Ville$lon)
-Count_Ville <- Count_Ville[-which(abs(Count_Ville$lon)>60),]
-data = Count_Ville[which(Count_Ville$n > 3),]
-
-# Construction d'un dataframe avec les informations sur les étapes
-
-stages_TDF$Date <- as.Date(stages_TDF$Date, format = "%Y-%m-%d")
-
-Count_Etape <- stages_TDF %>% group_by(Origin, Destination, lon_Origin, lat_Origin, lon_Destination, lat_Destination, Inf_1945 = format(Date, format = "%Y") <= 1945) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n))
-
-Count_Etape$lat_Destination <- as.numeric(Count_Etape$lat_Destination)
-Count_Etape$lon_Destination <- as.numeric(Count_Etape$lon_Destination)
-Count_Etape$lat_Origin <- as.numeric(Count_Etape$lat_Origin)
-Count_Etape$lon_Origin <- as.numeric(Count_Etape$lon_Origin)
+# # Importation des données
+# 
+# stages_TDF <- read.csv("./TDF/stages_TDFcoord2.csv", sep = ",")
+# stages_TDF <- stages_TDF[-1]
+# 
+# # Construction d'un nouveau dataframe avec les informations par ville
+# 
+# Origin_Type = stages_TDF[c("Origin", "Type", "lat_Origin", "lon_Origin", "Date")]
+# colnames(Origin_Type) = c("Ville", "Type", "lat", "lon", "Date")
+# Destination_Type = stages_TDF[c("Destination", "Type", "lat_Destination", "lon_Destination", "Date")]
+# colnames(Destination_Type) = c("Ville", "Type", "lat", "lon", "Date")
+# 
+# Ville_Type = rbind(Origin_Type, Destination_Type)
+# 
+# Ville_Type$Ville <- as.factor(Ville_Type$Ville)
+# Ville_Type$lat <- as.numeric(Ville_Type$lat)
+# Ville_Type$lon <- as.numeric(Ville_Type$lon)
+# 
+# # Construction d'un nouveau dataframe avec les infos des villes + le nb de fois où la ville a été visitée
+# # Séparation temporelle avant ou après 1945
+# 
+# Count_Ville <- Ville_Type %>% group_by(Ville, lon, lat) %>%
+#   summarize(n = n()) %>%
+#   arrange(desc(n))
+# 
+# Count_Ville[which(Count_Ville$n >=10),]
+# 
+# Count_Ville$lat <- as.numeric(Count_Ville$lat)
+# Count_Ville$lon <- as.numeric(Count_Ville$lon)
+# Count_Ville <- Count_Ville[-which(abs(Count_Ville$lon)>60),]
+# data = Count_Ville[which(Count_Ville$n > 3),]
+# 
+# # Construction d'un dataframe avec les informations sur les étapes
+# 
+# stages_TDF$Date <- as.Date(stages_TDF$Date, format = "%Y-%m-%d")
+# 
+# Count_Etape <- stages_TDF %>% group_by(Origin, Destination, lon_Origin, lat_Origin, lon_Destination, lat_Destination, Inf_1945 = format(Date, format = "%Y") <= 1945) %>%
+#   summarize(n = n()) %>%
+#   arrange(desc(n))
+# 
+# Count_Etape$lat_Destination <- as.numeric(Count_Etape$lat_Destination)
+# Count_Etape$lon_Destination <- as.numeric(Count_Etape$lon_Destination)
+# Count_Etape$lat_Origin <- as.numeric(Count_Etape$lat_Origin)
+# Count_Etape$lon_Origin <- as.numeric(Count_Etape$lon_Origin)
 
 ```
 
 ```{r  ggplotly, echo = TRUE,  eval = TRUE,  message = FALSE, warning=FALSE}
-# Construction de la carte
-
-france <- c(left = -5, bottom = 41, right = 10, top = 51.5)
-map <- get_stamenmap(france, zoom = 5, maptype = "terrain-background")
-mid <- 30
-p <- ggmap(map)+
-  geom_point( data=data, aes(x=lon, y=lat, size = n, color=n))+
-  scale_color_continuous(limits=c(1, max(data$n)), breaks=seq(1, max(data$n), by=20), type = "gradient") +
-  guides(color= guide_legend(), size=guide_legend()) +
-  scale_size_continuous(limits=c(1, max(data$n)), breaks=seq(1, max(data$n), by=20)) +
-  theme_void() + labs(colour = "Nb fois ville d'accueil", size = "Nb fois ville d'accueil")
-
-p <-p + new_scale("size") + new_scale_color()
-
-Count_Etape_lim <- Count_Etape[which(Count_Etape$n >2),]
-
-
-for (k in 1:nrow(Count_Etape_lim)){
-  inter <- as.data.frame(gcIntermediate(c(Count_Etape_lim$lon_Origin[k], Count_Etape_lim$lat_Origin[k]), c(Count_Etape_lim$lon_Destination[k], Count_Etape_lim$lat_Destination[k]), n=50, addStartEnd=TRUE, breakAtDateLine=T))
-  names(inter) <- c("long", "lati")
-  inter["size"] <- Count_Etape_lim$n[k]
-  if (Count_Etape_lim$Inf_1945[k] == TRUE){
-    inter["color"] <- "Avant 1945"
-  } else {
-    inter["color"] <- "Après 1945"
-  }
-  p <- p + geom_line(data=inter, aes(x=long, y=lati, color=color, size = size), alpha = 0.70)
-}
-
-pt <- data[which(data$n >40),]
-for (k in 1:nrow(pt)){
-  p <- p +
-    geom_text(data = pt[k,], aes(x = lon, y = lat, label = Ville),
-              size = 3, vjust = 0, hjust = -0.25, col="black")
-}
-
-p <- p + scale_size_continuous(limits=c(1, max(Count_Etape_lim$n)), breaks=seq(1, max(Count_Etape_lim$n), by=5), range = c(0,2)) + guides(size=guide_legend(ncol=2)) + labs(title= "Carte de l'évolution des étapes") + labs(colour="Période") + labs(size = "Nb de fois villes connectées")
-
-p
+# # Construction de la carte
+# 
+# france <- c(left = -5, bottom = 41, right = 10, top = 51.5)
+# map <- get_stamenmap(france, zoom = 5, maptype = "terrain-background")
+# mid <- 30
+# p <- ggmap(map)+
+#   geom_point( data=data, aes(x=lon, y=lat, size = n, color=n))+
+#   scale_color_continuous(limits=c(1, max(data$n)), breaks=seq(1, max(data$n), by=20), type = "gradient") +
+#   guides(color= guide_legend(), size=guide_legend()) +
+#   scale_size_continuous(limits=c(1, max(data$n)), breaks=seq(1, max(data$n), by=20)) +
+#   theme_void() + labs(colour = "Nb fois ville d'accueil", size = "Nb fois ville d'accueil")
+# 
+# p <-p + new_scale("size") + new_scale_color()
+# 
+# Count_Etape_lim <- Count_Etape[which(Count_Etape$n >2),]
+# 
+# 
+# for (k in 1:nrow(Count_Etape_lim)){
+#   inter <- as.data.frame(gcIntermediate(c(Count_Etape_lim$lon_Origin[k], Count_Etape_lim$lat_Origin[k]), c(Count_Etape_lim$lon_Destination[k], Count_Etape_lim$lat_Destination[k]), n=50, addStartEnd=TRUE, breakAtDateLine=T))
+#   names(inter) <- c("long", "lati")
+#   inter["size"] <- Count_Etape_lim$n[k]
+#   if (Count_Etape_lim$Inf_1945[k] == TRUE){
+#     inter["color"] <- "Avant 1945"
+#   } else {
+#     inter["color"] <- "Après 1945"
+#   }
+#   p <- p + geom_line(data=inter, aes(x=long, y=lati, color=color, size = size), alpha = 0.70)
+# }
+# 
+# pt <- data[which(data$n >40),]
+# for (k in 1:nrow(pt)){
+#   p <- p +
+#     geom_text(data = pt[k,], aes(x = lon, y = lat, label = Ville),
+#               size = 3, vjust = 0, hjust = -0.25, col="black")
+# }
+# 
+# p <- p + scale_size_continuous(limits=c(1, max(Count_Etape_lim$n)), breaks=seq(1, max(Count_Etape_lim$n), by=5), range = c(0,2)) + guides(size=guide_legend(ncol=2)) + labs(title= "Carte de l'évolution des étapes") + labs(colour="Période") + labs(size = "Nb de fois villes connectées")
+# 
+# p
 
 ```
 
 
-
-<!-- ### Chart C -->
-
-<!-- ```{r} -->
-
-<!-- ``` -->
 
