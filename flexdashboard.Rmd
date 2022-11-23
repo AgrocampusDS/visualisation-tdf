@@ -46,37 +46,145 @@ library(ggnewscale)
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-### Graph 1
+### Evolution of distance over time
 
-```{r, echo = TRUE}
-#install.package('flexdasboard')
-#rmarkdown::draft("dashboard.Rmd", template = "flex_dashboard", package = "flexdashboard")
+
+
+```{r data, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+tdf=read.csv('C:/Users/BOUADDOUCH Najia/Documents/Projet visu/stages_TDF.csv',sep=';')
+tdf$Date <- as.Date(tdf$Date, format = "%Y-%m-%d")
+flat=c('Flat','Flat stage','Flat Stage','Half Stage','Plain stage','Plain stage with cobblestones',"Flat cobblestone stage" )
+hilly=c('Hilly','Hilly stage','Transition stage','Half Stage','Intermediate stage')
+mountain=c('Mountain',"High mountain stage","Medium mountain stage","Mountain Stage" ,"Stage with mountain(s)" ,"Mountain stage" ,"Stage with mountain")
+ind_timetrial=c('individual time trial',"Mountain time trial","Individual time trial")
+team_timetrial=c('team time trial',"Team time trial")
+
+type=list(flat,hilly,mountain,ind_timetrial,team_timetrial)  #liste de vecteurs
+
+for (i in 1:length(tdf$Type)) {
+  for (k in type) {
+    if (tdf$Type[i]%in% k) {
+      tdf$Type[i]=k[1]
+      
+    }
+  }
+}
+
+
+unique(tdf$Type) #double check
+
+tdf$Year= as.numeric(format(tdf$Date, format="%Y"))
+
+tdf %>%
+  group_by(Year) %>%
+  summarise(dist_totale = sum(Distance))%>%
+  as.data.frame()-> dist_totale
+
+tdf_bis=merge(tdf,dist_totale,by='Year')
+
+
+tdf_bis %>%
+  group_by(Year) %>%
+  summarise(nb_stages=table(as.numeric(Stage)))%>%
+  count()%>%
+  as.data.frame() -> nb_stages
+
+tdf_bis $Type = factor(tdf_bis$Type, levels = c("Flat",  "team time trial","individual time trial", "Hilly","Mountain"), ordered = TRUE)
+#tdf_bis $Type = factor(tdf_bis$Type, levels = c("Hilly", "individual time trial", "team time trial","Mountain", "Flat"), ordered = TRUE)
+
+tdf_bis=merge(tdf_bis,nb_stages,by='Year')
+
+
 ```
 
-The [flexdashboard website](https://rmarkdown.rstudio.com/flexdashboard/index.html) provides multiple advanced examples.
 
-### Graph 2
+```{r ggplot2, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE}
+ggplot(data=tdf_bis,aes(as.numeric(Year))) +
+  geom_bar(position = "fill",width = 2,alpha =1,aes(fill = Type))+
+  #scale_fill_manual(values=c('#0A014F', '#453d77', '#8979ed','#dcd7fa','#f3f2fd'))+
 
-```{r data, eval = TRUE, echo = FALSE, results='hide', message = FALSE, warning=FALSE}
-n <- 100
-dta <- tibble(size = round(rnorm(n, mean = 0, sd =10),2), 
-           color = sample(x= c('Blue', 'Yellow'), size = n, replace = TRUE))
 
+  geom_smooth(aes(y=n/25),linetype='dashed',colour='white',se=F)+
+  
+  #scale_fill_hue(c=60, l=80)+
+
+  scale_y_continuous(sec.axis = sec_axis(trans = ~.*25, name = "Number of stages")) +
+  geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 1),fill='light grey')+
+  
+  geom_text(aes(1917,0.5), label = "world war I", angle =270, size = 4,colour='black')+
+  geom_rect(aes(xmin = 1939, xmax = 1947, ymin = 0, ymax = 1),fill='light grey')+
+
+  geom_text(aes(1943,0.5), label ="world war II", angle=270, size = 4,colour='black')+
+  theme(legend.position="left") + 
+  
+  
+  labs( y = "Proportion", x="Years")
+  
+  #theme_classic()
+  
+```
+
+### Evolution of stages types over time 
+
+
+
+```{r ggplot1, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE}
+ggplot(data=tdf_bis,aes(x=Year)) +
+  geom_smooth(aes(y=Distance,color=Type),se=F)+
+  #scale_colour_hue(c=45, l=80)+
+  #scale_colour_brewer()+
+  #scale_color_manual(values=c('#37305f', '#453d77', '#8979ed','#dcd7fa','#f3f2fd'))+
+  #geom_smooth()+
+ 
+
+  geom_smooth(aes(x=Year,y=dist_totale/10,color='total'),color='#6D5A8A',linetype = "dashed",se=F,size=2)+
+  #scale_linetype_manual(NULL, values = 1) +
+  #scale_color_manual(values = '#F21A00') +
+  scale_y_continuous(name = "Distance per stage",
+    sec.axis = sec_axis( trans=~.*10, name="Total distance")
+  )+
+  #geom_hline(yintercept=mean(tdf$Distance), linetype='dashed') +
+  #geom_hline(data= mean, aes(yintercept = x,col=Group.1),linetype='dashed',size=0.0001) +
+  labs(colour = 'Stage type',face='bold') + 
+  labs(y='Distance in km',x='Years' )+ 
+  
+  geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 600),fill='#92BBB0')+
+  
+  geom_text(aes(1917,400), label = "world war I", angle =270, size = 4,colour='#52605C')+
+  geom_rect(aes(xmin = 1939, xmax = 1947, ymin = 0, ymax = 600),fill='#92BBB0')+
+
+  geom_text(aes(1943,400), label ="world war II", angle=270, size = 4,colour='#52605C')+
+  
+  theme(
+  panel.background = element_rect(fill = "#DFF3ED",
+                                colour = "#DFF3ED",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+  panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white")) + 
+
+  theme(
+    axis.title.y.right = element_text(color = 'black',size=12))+
+  
+  theme(axis.title = element_text(face='bold',size=12))+
+
+  theme(axis.text.y.right = element_text(face="bold"))+
+  theme(legend.position="left")
+
+      
 ```
 
 
-```{r graph_static,  echo = FALSE,  message = FALSE, warning=FALSE}
-p1 <- dta %>% ggplot() +
-  aes(x=color, y = size) +
-  geom_boxplot(aes(fill= color))
-p1
-```
+
+
+
 
 Column
 -----------------------------------------------------------------------
 
 
-### Cartographie des lieux du tour de France
+### Evolution of stages over time
 
 ```{r data2, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 # Importation des données
@@ -126,7 +234,7 @@ Count_Etape$lon_Origin <- as.numeric(Count_Etape$lon_Origin)
 
 ```
 
-```{r  ggplotly, echo = TRUE,  eval = TRUE,  message = FALSE, warning=FALSE}
+```{r  ggplot3, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE}
 # Construction de la carte
 
 france <- c(left = -5, bottom = 41, right = 10, top = 51.5)
@@ -137,7 +245,7 @@ p <- ggmap(map)+
   scale_color_continuous(limits=c(1, max(data$n)), breaks=seq(1, max(data$n), by=20), type = "gradient") +
   guides(color= guide_legend(), size=guide_legend()) +
   scale_size_continuous(limits=c(1, max(data$n)), breaks=seq(1, max(data$n), by=20)) +
-  theme_void() + labs(colour = "Nb fois ville d'accueil", size = "Nb fois ville d'accueil")
+  theme_void() + labs(colour = "Nb of times host city", size = "Nb of times host city")
 
 p <-p + new_scale("size") + new_scale_color()
 
@@ -149,9 +257,9 @@ for (k in 1:nrow(Count_Etape_lim)){
   names(inter) <- c("long", "lati")
   inter["size"] <- Count_Etape_lim$n[k]
   if (Count_Etape_lim$Inf_1945[k] == TRUE){
-    inter["color"] <- "Avant 1945"
+    inter["color"] <- "Before 1945"
   } else {
-    inter["color"] <- "Après 1945"
+    inter["color"] <- "After 1945"
   }
   p <- p + geom_line(data=inter, aes(x=long, y=lati, color=color, size = size), alpha = 0.70)
 }
@@ -163,7 +271,7 @@ for (k in 1:nrow(pt)){
               size = 3, vjust = 0, hjust = -0.25, col="black")
 }
 
-p <- p + scale_size_continuous(limits=c(1, max(Count_Etape_lim$n)), breaks=seq(1, max(Count_Etape_lim$n), by=5), range = c(0,2)) + guides(size=guide_legend(ncol=2)) + labs(title= "Carte de l'évolution des étapes") + labs(colour="Période") + labs(size = "Nb de fois villes connectées")
+p <- p + scale_size_continuous(limits=c(1, max(Count_Etape_lim$n)), breaks=seq(1, max(Count_Etape_lim$n), by=5), range = c(0,2)) + guides(size=guide_legend(ncol=2))  + labs(colour="Time period") + labs(size = "Nb of stages between cities")
 
 p
 
