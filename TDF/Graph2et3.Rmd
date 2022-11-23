@@ -92,7 +92,7 @@ tdf_bis=merge(tdf,dist_totale,by='Year')
 ```{r}
 ggplot(data=tdf_bis,aes(x=Year)) +
   geom_smooth(aes(y=Distance,color=Type),se=F)+
-  scale_colour_hue(c=45, l=80)+
+  #scale_colour_hue(c=45, l=80)+
   #scale_colour_brewer()+
   #scale_color_manual(values=c('#37305f', '#453d77', '#8979ed','#dcd7fa','#f3f2fd'))+
   #geom_smooth()+
@@ -109,7 +109,21 @@ ggplot(data=tdf_bis,aes(x=Year)) +
   labs(colour = 'Stage type',face='bold') + 
   labs(y='Distance in km',x='Years' )+ 
   
-  theme_grey() +
+  geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 600),fill='#A08994')+
+  
+  geom_text(aes(1917,400), label = "world war I", angle =270, size = 4,colour='black')+
+  geom_rect(aes(xmin = 1939, xmax = 1947, ymin = 0, ymax = 600),fill='light grey')+
+
+  geom_text(aes(1943,400), label ="world war II", angle=270, size = 4,colour='black')+
+  
+  theme(
+  panel.background = element_rect(fill = "#E4F5F0",
+                                colour = "#E4F5F0",
+                                size = 0.5, linetype = "solid"),
+  panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                colour = "white"), 
+  panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white")) + 
 
   theme(
     axis.title.y.right = element_text(color = '#fd3f92',size=12))+
@@ -145,6 +159,11 @@ tdf_bis %>%
   count()%>%
   as.data.frame() -> nb_stages
 ```
+```{r}
+tdf_bis $Type = factor(tdf_bis$Type, levels = c("Flat",  "team time trial","individual time trial", "Hilly","Mountain"), ordered = TRUE)
+#tdf_bis $Type = factor(tdf_bis$Type, levels = c("Hilly", "individual time trial", "team time trial","Mountain", "Flat"), ordered = TRUE)
+
+```
 
 
 ```{r}
@@ -153,9 +172,9 @@ tdf_bis %>%
   group_by(Type)%>%
   
   ggplot(aes(as.numeric(Year),fill = Type)) +
-  geom_bar(position = "fill",width = 1,alpha =0.7)+
+  geom_bar(position = "fill",width = 2,alpha =5)+
   
-  scale_fill_hue(c=35, l=70)+
+  #scale_fill_hue(c=100, l=40)
   
   labs(title = "Stages types", y = "Proportion", x="Years")+
   theme(legend.position="left")
@@ -169,23 +188,27 @@ tdf_bis=merge(tdf_bis,nb_stages,by='Year')
 
 ```{r}
 ggplot(data=tdf_bis,aes(as.numeric(Year))) +
-  geom_bar(position = "fill",width = 1,alpha =0.7,aes(fill = Type))+
+  geom_bar(position = "fill",width = 2,alpha =1,aes(fill = Type))+
+  #scale_fill_manual(values=c('#0A014F', '#453d77', '#8979ed','#dcd7fa','#f3f2fd'))+
 
-  geom_smooth(aes(y=n/25),linetype='dashed',colour='black',se=F)+
+
+  geom_smooth(aes(y=n/25),linetype='dashed',colour='white',se=F)+
   
-  scale_fill_hue(c=60, l=80)+
+  #scale_fill_hue(c=60, l=80)+
+
   scale_y_continuous(sec.axis = sec_axis(trans = ~.*25, name = "Number of stages")) +
-  geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 1),fill='white')+
+  geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 1),fill='light grey')+
   
   geom_text(aes(1917,0.5), label = "world war I", angle =270, size = 4,colour='black')+
-  geom_rect(aes(xmin = 1939, xmax = 1947, ymin = 0, ymax = 1),fill='white')+
+  geom_rect(aes(xmin = 1939, xmax = 1947, ymin = 0, ymax = 1),fill='light grey')+
 
   geom_text(aes(1943,0.5), label ="world war II", angle=270, size = 4,colour='black')+
   theme(legend.position="left") + 
   
-  labs(title = "Stages types", y = "Proportion", x="Years")+
   
-  theme_classic()
+  labs(title = "Stages types", y = "Proportion", x="Years")
+  
+  #theme_classic()
   
 ```
 
