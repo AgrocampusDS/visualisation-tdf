@@ -1,5 +1,5 @@
 ---
-title: "Le tour de France à vélo"
+title: "The journey of the Tour de France"
 author: "Najia et Léane"
 output: 
   flexdashboard::flex_dashboard:
