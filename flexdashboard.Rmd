@@ -238,7 +238,7 @@ Evolution of distance over time
 
 
 
-```{r ggplot5, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 10}
+```{r ggplot5, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 7}
 
 g1
 ```
@@ -250,7 +250,7 @@ Evolution of stages types over time
 
 
 
-```{r ggplot6, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 10}
+```{r ggplot6, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 7}
 g2      
 ```
 
