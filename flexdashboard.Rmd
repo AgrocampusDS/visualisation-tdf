@@ -159,7 +159,7 @@ Evolution of stages over time
 ### Evolution of stages over time
 
 ```{r data2, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-# Importation des données
+# Importation des données 
 stages_TDF <- read.csv("./TDF/stages_TDFcoord2.csv", sep = ",")
 stages_TDF <- stages_TDF[-1]
 # Construction d'un nouveau dataframe avec les informations par ville
