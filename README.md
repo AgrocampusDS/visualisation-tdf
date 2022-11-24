@@ -11,4 +11,7 @@ Pour la construction de la carte, il a fallu aller chercher les coordonnées GPS
   - pour obtenir les informations sur les villes (coordonnées et nb de fois à la ville à accueilli le Tour) : le data frame COuntVille
   - pour obtenir les informations sur les étapes (coordonnées villes d'arrivé et de départ et nb de fois où les villes ont été relié) : dataframe Count_Etape
  
-  
+Pour les deux autres graphiques, des colonnes ont été rajoutées aux jeu de données afin de permettre d'aller plus loin dans l'analyse : nombre de stages et distance parcourue pour chaque année.
+Les types de stages ont également été redéfinis : Flat, mountain, hilly, individual time trial et team time trial.
+
+

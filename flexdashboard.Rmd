@@ -91,6 +91,7 @@ g1 <- ggplot(data=tdf_bis,aes(as.numeric(Year))) +
   scale_y_continuous(expand = c(0, 0),sec.axis = sec_axis(trans = ~.*25, name = "Number of stages")) +
   
   scale_x_continuous(expand=c(0,0))+
+
   geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 1),fill='light grey')+
   
   geom_text(aes(1917,0.5), label = "world war I", angle =270, size = 4,colour='black')+
@@ -99,10 +100,12 @@ g1 <- ggplot(data=tdf_bis,aes(as.numeric(Year))) +
   theme(legend.position="left") +  
   theme(axis.title = element_text(size=12),
     axis.title.y.right = element_text(size=12))+
+
   
   theme(legend.title=element_text(size=15),legend.text = element_text( size=15))+ 
   
   labs( y = "Proportion", x="Years")
+
 g1
 ```
 
@@ -112,6 +115,7 @@ g1
 
 
 ```{r ggplot1, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 10}
+
 g2 <- ggplot(data=tdf_bis,aes(x=Year)) +
   geom_smooth(aes(y=Distance,color=Type),se=F)+
  
@@ -145,6 +149,7 @@ g2 <- ggplot(data=tdf_bis,aes(x=Year)) +
   theme(axis.text.y.right = element_text(size=12))+
   theme(legend.position="left")+
   theme(legend.title=element_text(size=15),legend.text = element_text( size=15)) 
+
 
       
 g2
@@ -238,6 +243,7 @@ Evolution of distance over time
 
 
 ```{r ggplot5, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 10}
+
 g1
 ```
 
@@ -248,7 +254,9 @@ Evolution of stages types over time
 
 
 
+<<<<<<< HEAD
 ```{r ggplot6, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 10}
+
 g2      
 ```
 
