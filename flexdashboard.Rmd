@@ -47,8 +47,6 @@ Evolution of distance over time
 
 ### Evolution of distance over time
 
-
-
 ```{r data, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 tdf=read.csv('stages_TDF.csv',sep=';')
 tdf$Date <- as.Date(tdf$Date, format = "%Y-%m-%d")
@@ -90,8 +88,11 @@ ggplot(data=tdf_bis,aes(as.numeric(Year))) +
 
   geom_smooth(aes(y=n/25),linetype='dashed',colour='white',se=F)+
 
-  scale_y_continuous(expand=c(0,0),sec.axis = sec_axis(trans = ~.*25, name = "Number of stages")) +
+  scale_y_continuous(expand = c(0, 0),sec.axis = sec_axis(trans = ~.*25, name = "Number of stages")) +
+  
   scale_x_continuous(expand=c(0,0))+
+
+
   geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 1),fill='light grey')+
   
   geom_text(aes(1917,0.5), label = "world war I", angle =270, size = 4,colour='black')+
@@ -153,6 +154,7 @@ ggplot(data=tdf_bis,aes(x=Year)) +
 
 Evolution of stages over time
 ======================================================================
+
 
 ### Evolution of stages over time
 
