@@ -48,7 +48,7 @@ Overview
 Column {data-width=650}
 ----------------------------------------------------------------------
 
-###Evolution of stages types over time 
+### Evolution of stages types over time 
 
 ```{r data, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 tdf=read.csv('stages_TDF.csv',sep=';')
