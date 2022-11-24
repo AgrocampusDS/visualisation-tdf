@@ -98,7 +98,7 @@ ggplot(data=tdf_bis,aes(as.numeric(Year))) +
   geom_text(aes(1917,0.5), label = "world war I", angle =270, size = 4,colour='black')+
   geom_rect(aes(xmin = 1939, xmax = 1947, ymin = 0, ymax = 1),fill='light grey')+
   geom_text(aes(1943,0.5), label ="world war II", angle=270, size = 4,colour='black')+
-  theme(legend.position="left") + 
+  theme(legend.position="left") +  
   
   
   labs( y = "Proportion", x="Years")
