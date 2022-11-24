@@ -108,7 +108,9 @@ ggplot(data=tdf_bis,aes(as.numeric(Year))) +
   
   #scale_fill_hue(c=60, l=80)+
 
-  scale_y_continuous(sec.axis = sec_axis(trans = ~.*25, name = "Number of stages")) +
+  scale_y_continuous(expand = c(0, 0),sec.axis = sec_axis(trans = ~.*25, name = "Number of stages")) +
+  
+  scale_x_continuous(expand=c(0,0))+
   geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 1),fill='light grey')+
   
   geom_text(aes(1917,0.5), label = "world war I", angle =270, size = 4,colour='black')+
@@ -137,10 +139,10 @@ ggplot(data=tdf_bis,aes(x=Year)) +
   #geom_smooth()+
  
 
-  geom_smooth(aes(x=Year,y=dist_totale/10,color='total'),color='#6D5A8A',linetype = "dashed",se=F,size=2)+
+  geom_smooth(aes(x=Year,y=dist_totale/10,color='total'),color='#C57B57',linetype = "dashed",se=F,size=2)+
   #scale_linetype_manual(NULL, values = 1) +
   #scale_color_manual(values = '#F21A00') +
-  scale_y_continuous(name = "Distance per stage",
+  scale_y_continuous(name = "Distance per stage", expand = expansion(mult = c(0, 0)),
     sec.axis = sec_axis( trans=~.*10, name="Total distance")
   )+
   #geom_hline(yintercept=mean(tdf$Distance), linetype='dashed') +
@@ -148,16 +150,17 @@ ggplot(data=tdf_bis,aes(x=Year)) +
   labs(colour = 'Stage type',face='bold') + 
   labs(y='Distance in km',x='Years' )+ 
   
-  geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 600),fill='#92BBB0')+
+  geom_rect(aes(xmin = 1914, xmax = 1919, ymin = 0, ymax = 600),fill='#C2D9D4')+
   
-  geom_text(aes(1917,400), label = "world war I", angle =270, size = 4,colour='#52605C')+
-  geom_rect(aes(xmin = 1939, xmax = 1947, ymin = 0, ymax = 600),fill='#92BBB0')+
+  geom_text(aes(1917,300), label = "world war I", angle =270, size = 4,colour='#52605C')+
+  geom_rect(aes(xmin = 1939, xmax = 1947, ymin = 0, ymax = 600),fill='#C2D9D4')+
 
-  geom_text(aes(1943,400), label ="world war II", angle=270, size = 4,colour='#52605C')+
+  geom_text(aes(1943,300), label ="world war II", angle=270, size = 4,colour='#52605C')+
+  
   
   theme(
-  panel.background = element_rect(fill = "#DFF3ED",
-                                colour = "#DFF3ED",
+  panel.background = element_rect(fill = "#E3EBE9",
+                                colour = "#E3EBE9",
                                 size = 0.5, linetype = "solid"),
   panel.grid.major = element_line(size = 0.5, linetype = 'solid',
                                 colour = "white"), 
@@ -165,7 +168,7 @@ ggplot(data=tdf_bis,aes(x=Year)) +
                                 colour = "white")) + 
 
   theme(
-    axis.title.y.right = element_text(color = 'black',size=12))+
+    axis.title.y.right = element_text(color = '#C57B57',size=12))+
   
   theme(axis.title = element_text(face='bold',size=12))+
 
