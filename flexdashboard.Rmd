@@ -48,7 +48,7 @@ Overview
 Column {data-width=650}
 ----------------------------------------------------------------------
 
-### Evolution of distance over time
+###Evolution of stages types over time 
 
 ```{r data, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 tdf=read.csv('stages_TDF.csv',sep=';')
@@ -110,7 +110,7 @@ g1
 ```
 
 
-### Evolution of stages types over time 
+### Evolution of distance over time
 
 
 
@@ -234,10 +234,11 @@ p
 Evolution of distance over time
 ======================================================================
 
-### Evolution of distance over time
+### Evolution of stages types over time
 
 
-```{r ggplot5, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 9}
+
+```{r ggplot5, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 10}
 
 g1
 ```
@@ -245,7 +246,7 @@ g1
 Evolution of stages types over time 
 ======================================================================
 
-### Evolution of stages types over time 
+### Evolution of distance over time
 
 
 
