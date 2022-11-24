@@ -42,8 +42,11 @@ library(raster)
 library(ggnewscale)
 ```
 
-Evolution of distance over time
+Overview
 ======================================================================
+
+Column {data-width=650}
+----------------------------------------------------------------------
 
 ### Evolution of distance over time
 
@@ -83,7 +86,7 @@ tdf_bis=merge(tdf_bis,nb_stages,by='Year')
 
 
 ```{r ggplot2, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 8, fig.height= 4}
-ggplot(data=tdf_bis,aes(as.numeric(Year))) +
+g1 <- ggplot(data=tdf_bis,aes(as.numeric(Year))) +
   geom_bar(position = "fill",width = 2,alpha =1,aes(fill = Type))+
 
   geom_smooth(aes(y=n/25),linetype='dashed',colour='white',se=F)+
@@ -102,17 +105,17 @@ ggplot(data=tdf_bis,aes(as.numeric(Year))) +
   
   
   labs( y = "Proportion", x="Years")
+
+g1
 ```
 
-Evolution of stages types over time 
-======================================================================
 
 ### Evolution of stages types over time 
 
 
 
 ```{r ggplot1, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 8, fig.height= 4}
-ggplot(data=tdf_bis,aes(x=Year)) +
+g2 <- ggplot(data=tdf_bis,aes(x=Year)) +
   geom_smooth(aes(y=Distance,color=Type),se=F)+
  
   geom_smooth(aes(x=Year,y=dist_totale/10,color='total'),color='#C57B57',linetype = "dashed",se=F,size=2)+
@@ -145,6 +148,7 @@ ggplot(data=tdf_bis,aes(x=Year)) +
   theme(axis.text.y.right = element_text(face="bold"))+
   theme(legend.position="left")
       
+g2
 ```
 
 
@@ -152,8 +156,8 @@ ggplot(data=tdf_bis,aes(x=Year)) +
 
 
 
-Evolution of stages over time
-======================================================================
+Column 
+-----------------------------------------------------------------
 
 
 ### Evolution of stages over time
@@ -223,5 +227,39 @@ for (k in 1:nrow(pt)){
               size = 3, vjust = 0, hjust = -0.25, col="black")
 }
 p <- p + scale_size_continuous(limits=c(1, max(Count_Etape_lim$n)), breaks=seq(1, max(Count_Etape_lim$n), by=5), range = c(0,2)) + guides(size=guide_legend(ncol=2))  + labs(colour="Time period") + labs(size = "Nb of stages between cities")
+p
+```
+
+
+Evolution of distance over time
+======================================================================
+
+### Evolution of distance over time
+
+
+```{r ggplot5, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 9}
+
+g1
+```
+
+Evolution of stages types over time 
+======================================================================
+
+### Evolution of stages types over time 
+
+
+
+```{r ggplot6, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE, fig.width = 10}
+g2      
+```
+
+
+Evolution of stages over time
+======================================================================
+
+
+### Evolution of stages over time
+
+```{r  ggplot4, echo = F,  eval = TRUE,  message = FALSE, warning=FALSE}
 p
 ```
